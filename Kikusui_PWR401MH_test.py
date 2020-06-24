@@ -37,6 +37,7 @@ class PWR(HiSLIP):
             self.vdev=Vxi11Device(host.encode(),"inst0".encode())
         except:
             pass
+        self.set_max_message_size(4096)
 
     def write(self, data):
         super(PWR, self).write(data)
@@ -68,7 +69,7 @@ class PWR(HiSLIP):
         return hdr['control_code']
 
     def OPC(self,callback=None):
-        self.write("*OPC")
+        self.write("*OPC;\n")
         po=select.poll()
         po.register(self.async_channel, select.POLLIN | select.POLLPRI)
         def wait_srq(callback=callback):
@@ -78,40 +79,40 @@ class PWR(HiSLIP):
         
 def test(host="192.168.2.5"):
     dev=PWR(host)
-    dev.set_max_message_size(1024)
     print("actual maximum message size is:",dev.MAXIMUM_MESSAGE_SIZE)
     sys.stdout.flush()
     print("Overlap_mode:",dev.overlap_mode)
     dev.device_clear()
     print("Overlap_mode after_device clear:",dev.overlap_mode)
     dev.request_lock() # exclusive lock
-    print (dev.ask("*IDN?;"))
-    print (dev.ask("*IDN?;", reqRaw=True))
+    print (dev.ask("*IDN?;\n"))
+    print (dev.ask("*IDN?;\n",reqRaw=True))
     #print (dev.vdev.qIDN())
     dev.release_lock()
     print ("lock info",dev.lock_info())
+
+    print (dev.ask("FETC:ALL?;\n"))
+    print (dev.ask("MEAS:ALL?;\n"))
     return dev
 
 def test_SRQ(dev):
     import time
     print("SRQ test:")
-    dev.write("*CLS;")
-    dev.write("TRIG:TRAN:SOUR BUS")
-    dev.write("INIT:TRAN")# 'イニシエート
-    print("*ESE:", dev.ask("*ESE?"))
-    print("*ESE:", dev.ask("*ESE?",reqRaw=True))
-    print("*SRE:", dev.ask("*SRE?"), dev.status_query())
-    print("*SRE:", dev.ask("*SRE?",reqRaw=True), dev.status_query())
-    dev.write("*SRE 32")
-    dev.write("*ESE 1")
-    #dev.write("TRIG:TRAN") # ' ソフトウェアトリガを与える
+    dev.write("*CLS;\n")
+    dev.write("TRIG:TRAN:SOUR BUS;\n")
+    dev.write("INIT:TRAN;\n")# 'イニシエート
+    print("*ESE:", dev.ask("*ESE?;\n"))
+    print("*SRE:", dev.ask("*SRE?;\n"), dev.status_query())
+    dev.write("*SRE 32;\n")
+    dev.write("*ESE 1;\n")
+    #dev.write("TRIG:TRAN;\n") # ' ソフトウェアトリガを与える
     def callback(dev=dev):
         time.sleep(1.0)
     dev.start_SRQ_thread(callback=callback)
     s=time.time()
     print("thread status1:",dev.srq_thread.is_alive())
-    #dev.write("TRIG:TRAN") # ' ソフトウェアトリガを与える
-    dev.write("*CLS;*TRG;*OPC;")
+    #dev.write("TRIG:TRAN;\n") # ' ソフトウェアトリガを与える
+    dev.write("*CLS;*TRG;*OPC;\n")
     print("thread status2:",dev.srq_thread.is_alive())
     #dev.srq_lock.acquire()
     r=dev.srq_thread.join()
@@ -121,9 +122,11 @@ def test_SRQ(dev):
     print(dev.status_query())
     while  [s for s,m in dev.poll() if (m & (~select.POLLOUT &0xff))]:
         print("resp",dev.read_waiting())
-    print("*SRE",dev.ask("*SRE?",reqRaw=True))
-    dev.write("*CLS;"); print("*STB", dev.ask("*STB?"), dev.status_query())
-    dev.write("*CLS;"); print("*ESR", dev.ask("*ESR?"), dev.status_query())
+    print("*SRE:", dev.ask("*SRE?;\n"))
+    dev.write("*CLS;\n"); print("*STB:", dev.ask("*STB?;\n"), dev.status_query())
+    dev.write("*CLS;\n"); print("CLS:", dev.status_query())
+    print("*ESR", dev.ask("*ESR?;\n"), dev.status_query())
+    print ("SYS error", dev.ask("SYST:ERR?;\n"))
     return 
 
 def test_lock(dev):
@@ -145,25 +148,25 @@ def test_multi_response(dev):
     print("multi response test")
     print("operation mode:",dev.overlap_mode)
 
-    print ("ask:", dev.ask("*IDN?"))
-    print ("ask:", dev.ask("*IDN?",reqRaw=True))
+    print ("ask:", dev.ask("*IDN?;\n"))
+    print ("ask:", dev.ask("*IDN?;\n",reqRaw=True))
     
-    dev.write("*IDN?")
+    dev.write("*IDN?;\n")
     print("write message ID:", dev.most_recent_message_id)
     print(" response",  dev.read_waiting())
 
-    dev.write("*IDN?")
+    dev.write("*IDN?;\n")
     print("message ID for *IDN?:", dev.most_recent_message_id)
-    dev.write("*STB?")
+    dev.write("*STB?;\n")
     print("message ID for *STB?:", dev.most_recent_message_id)
     print("response", dev.read_waiting())
     print(dev.read_waiting())
 
     print ("write and ask")
-    dev.write("*IDN?")
+    dev.write("*IDN?;\n")
     print("message ID for *IDN?:", dev.most_recent_message_id)
     try:
-        print("Ask STB:",dev.ask("*STB?"))
+        print("Ask STB:",dev.ask("*STB?;\n"))
     except TypeError as m:
         print("Erro Msg",m)
     # message for "*IDN?;" is missing.
@@ -171,7 +174,7 @@ def test_multi_response(dev):
         print("message ID for *STB?:", dev.most_recent_message_id)
         print("response",dev.read_waiting())
         print(dev.read_waiting())
-    dev.write("*IDN?;*STB?")
+    dev.write("*IDN?;*STB?;\n")
     print("write message ID:", dev.most_recent_message_id)
     print("response:",dev.read_waiting())
     
@@ -179,22 +182,22 @@ def test_multi_response_vxi11(dev):
     print("vxi11 test")
     dev=dev.vdev
 
-    print ("ask:", dev.ask("*IDN?"))
+    print ("ask:", dev.ask("*IDN?;\n"))
     
-    dev.write("*IDN?")
+    dev.write("*IDN?;\n")
     print(" response",  dev.read())
 
-    dev.write("*IDN?")
-    dev.write("*STB?") # in cVXI11, the previous command will be ignored.
+    dev.write("*IDN?;\n")
+    dev.write("*STB?;\n") # in cVXI11, the previous command will be ignored.
     print("responce",dev.read())
-    print(dev.read())
+    print("more?", dev.read())
 
-    dev.write("*IDN?")
-    dev.ask("*STB?") # in cVXI11, the previous command will be ignored.
+    dev.write("*IDN?;\n")
+    dev.ask("*STB?;\n") # in cVXI11, the previous command will be ignored.
     print("responce",dev.read())
 
     print("response to a combined message")
-    dev.write("*IDN?;*STB?")
+    dev.write("*IDN?;*STB?;\n")
     print("response:",dev.read())
 
 def main(host="192.168.2.5"):
@@ -205,6 +208,7 @@ def main(host="192.168.2.5"):
     print("make sure no more input from device\n")
     while dev.poll():
         dev.read_waiting()
+    test_SRQ(dev)        
     test_lock(dev)
     
 if __name__ == "__main__":
