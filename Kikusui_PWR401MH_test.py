@@ -86,6 +86,7 @@ def test(host="192.168.2.5"):
     print("Overlap_mode after_device clear:",dev.overlap_mode)
     dev.request_lock() # exclusive lock
     print (dev.ask("*IDN?;"))
+    print (dev.ask("*IDN?;", reqRaw=True))
     #print (dev.vdev.qIDN())
     dev.release_lock()
     print ("lock info",dev.lock_info())
@@ -98,7 +99,9 @@ def test_SRQ(dev):
     dev.write("TRIG:TRAN:SOUR BUS")
     dev.write("INIT:TRAN")# 'イニシエート
     print("*ESE:", dev.ask("*ESE?"))
+    print("*ESE:", dev.ask("*ESE?",reqRaw=True))
     print("*SRE:", dev.ask("*SRE?"), dev.status_query())
+    print("*SRE:", dev.ask("*SRE?",reqRaw=True), dev.status_query())
     dev.write("*SRE 32")
     dev.write("*ESE 1")
     #dev.write("TRIG:TRAN") # ' ソフトウェアトリガを与える
@@ -118,7 +121,7 @@ def test_SRQ(dev):
     print(dev.status_query())
     while  [s for s,m in dev.poll() if (m & (~select.POLLOUT &0xff))]:
         print("resp",dev.read_waiting())
-    print("*SRE",dev.ask("*SRE?"))
+    print("*SRE",dev.ask("*SRE?",reqRaw=True))
     dev.write("*CLS;"); print("*STB", dev.ask("*STB?"), dev.status_query())
     dev.write("*CLS;"); print("*ESR", dev.ask("*ESR?"), dev.status_query())
     return 
@@ -143,6 +146,7 @@ def test_multi_response(dev):
     print("operation mode:",dev.overlap_mode)
 
     print ("ask:", dev.ask("*IDN?"))
+    print ("ask:", dev.ask("*IDN?",reqRaw=True))
     
     dev.write("*IDN?")
     print("write message ID:", dev.most_recent_message_id)
@@ -162,6 +166,7 @@ def test_multi_response(dev):
         print("Ask STB:",dev.ask("*STB?"))
     except TypeError as m:
         print("Erro Msg",m)
+    # message for "*IDN?;" is missing.
     finally:
         print("message ID for *STB?:", dev.most_recent_message_id)
         print("response",dev.read_waiting())
