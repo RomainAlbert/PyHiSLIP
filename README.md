@@ -12,3 +12,12 @@ This is an alternate version of PyHiSLIP.py by Levshinovskiy Mikhail.
 It add support for SRQ and raw data reading in ask() method.
 It also support both python2 and python3.
 This version was tested with pytho2.7 and python3.6-3.7. 
+
+## note:
+
+This modules can be compiled with cython. If you use multiple version of
+Python interpreter, you need to delete pyhislip.cpp everytime you changed interpreter
+version.
+
+cython version newer than 0.29.6 is recomended.
+

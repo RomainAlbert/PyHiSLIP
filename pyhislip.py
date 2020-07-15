@@ -1,3 +1,5 @@
+#!cython
+# distutils: language=c++
 # -*- coding: utf-8 -*-
 '''
 This module provide HiSLIP protocol client work.
@@ -17,7 +19,6 @@ from collections import OrderedDict
 from select import poll, POLLIN, POLLPRI
 import threading
 from logging import warn,debug,info,error
-
 
 class HiSLIPFatalError(Exception):
     '''
@@ -151,8 +152,8 @@ class _HiSLIP(object):
         This method creates HiSLIP message following next format:
         <Prologue><Message Type><Control Code><Message Parameter><Payload Length><Data>
         where:
-            Prologue: is ASCII “HS”
-            Message Type: 1 byte, message identifier
+            Prologue: is ASCII "HS"
+        Message Type: 1 byte, message identifier
             Control Code: 1 byte, general parameter of message.
                             If the field is not defined for a message, 0 shall be sent.
             Message Parameter: 4 bytes, include one or more parameters of message.
@@ -243,8 +244,8 @@ class _HiSLIP(object):
         HiSLIP protocol has next format:
         <Prologue><Message Type><Control Code><Message Parameter><Payload Length><Data>
         where:
-            Prologue: is ASCII “HS”
-            Message Type: 1 byte, message identifier
+            Prologue: is ASCII "HS"
+        Message Type: 1 byte, message identifier
             Control Code: 1 byte, general parameter of message.
                             If the field is not defined for a message, 0 shall be sent.
             Message Parameter: 4 bytes, include one or more parameters of message.
@@ -459,10 +460,10 @@ class HiSLIP(_HiSLIP):
         rmt_delivered = False
 
         if len(data) >= 1:
-            if ( message_type == self.message_types['DataEnd']
-                 and (data[-1] in ('\n',b'\n'),ord('\n'))):
+            # if ( message_type == self.message_types['DataEnd']
+            #      and (data[-1] in ('\n',b'\n'),ord('\n'))):
+            if ( message_type == self.message_types['DataEnd']):
                 rmt_delivered = True
-
         return rmt_delivered
 
     def _add_new_line(self, data):
@@ -784,7 +785,7 @@ class HiSLIP(_HiSLIP):
     def wait_for_SRQ(self,timeout=None):
         return self.async_poll.poll(timeout) # None: wait forever
     
-    def get_service_Request(self, callbakc):
+    def get_service_Request(self, callback):
         header = self._read_hislip_message(
             self.async_channel,
             self.message_types['AsyncServiceRequest']

@@ -10,12 +10,12 @@ PyHiSLIPは　High-Speed LAN Instrument Protocol (HiSLIP):
 
 PyHiSLIPは Levshinovskiy Mikhail氏によって開発されました。
 
-<https://github.com/llemish/PyHiSLIP.git>
+ <https://github.com/llemish/PyHiSLIP.git>
 
-英文のreadmeによると、Keysight N9030A and Keysight N5232A and Python
-3.4+の組み合わせでテストされました。
+英文のreadmeによると、original version は、Keysight N9030A and Keysight N5232A and Python
+3.4+の組み合わせでテストされています。
 
-ここに収められたバージョンはNoboru Yamamotoによって、
+ここに収められたバージョンは Noboru Yamamoto によって、
 
 > 1.  Python2での動作
 > 2.  SRQのサポート
@@ -23,8 +23,13 @@ PyHiSLIPは Levshinovskiy Mikhail氏によって開発されました。
 
 などの変更が加えられました。ソースコードは、
 
-<https://github.com/noboruatkek/PyHiSLIP.git>
+　<https://github.com/noboruatkek/PyHiSLIP.git>
 
 から入手可能です。このバージョンは、MacOSX 10.15 上のPython 2.7.17 /Python 3.8.2と "Kikusui
 PWR401MH"の組み合わせでテストされました。
+
 この装置ではWaveformの様な大きなデータを試すことはできませんでした。　(2020/5/7)
+
+### Cython
+
+pyhislip.pyx/pxdを用意することで、Cython化を行いました。
