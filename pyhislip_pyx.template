@@ -1,0 +1,9 @@
+#!cython
+
+#!cython
+# distutils: language=c++
+# -*- coding: utf-8 -*-
+
+cimport pyhislip
+
+

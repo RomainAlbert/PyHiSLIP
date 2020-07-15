@@ -1,0 +1,14 @@
+include MANIFEST.in
+include pyhislip.py
+include Description
+include LICENSE
+include hislip_test.py
+include pyhislip.pxd
+include pyhislip_pyx.template
+include Makefile
+include setup.py
+include README.md
+include README-JP.md
+include README-JP.rst
+include Kikusui_PWR401MH_test.py
+
