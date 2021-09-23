@@ -604,8 +604,8 @@ class HiSLIP(_HiSLIP):
 
             self.increment_message_id()
 
-    def read(self,wait_time=3000,async=False):
-        if async:
+    def read(self,wait_time=3000,asynchrone=False):
+        if asynchrone:
             chan=self.async_channel
         else:
             chan=self.sync_channel
